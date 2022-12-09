@@ -1,4 +1,4 @@
-# OCR_CRNN
+# ✏️ OCR_CRNN
 > CRNN 기반의 OCR 한글 모델 Training 
 
 - __CRNN_training.py__: ~ 모델 학습 및 모델(가중치) 저장
