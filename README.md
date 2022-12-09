@@ -22,7 +22,7 @@ CRNN_train_test.ipynb를 통해 코드를 구성하였고,
 # 0. 디렉토리 구조
 다음과 같은 디렉토리 구조로 이루어져 있습니다.
 
-```bash
+```
 OCR_CRNN/
 ├── printed/
 │     ├── 03343000.png
@@ -389,10 +389,10 @@ for i in range(32):
 # 10. 최종 디렉토리 구조
 학습 후에는 디렉토리가 다음과 같이 형식으로 변경됩니다.
 
-```bash
+```
 OCR_CRNN/
-├── <span style="color:green"> checkpoints/ </span>
-│     ├── <span style="color:yellowgreen"> 202211302056_crnn_korean_v1 </span>
+├── checkpoints/
+│     ├── 202211302056_crnn_korean_v1
 │     │     ├── history.csv
 │     │     ├── log.csv
 │     │     ├── weights.001.h5
