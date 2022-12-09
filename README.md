@@ -278,7 +278,11 @@ callback 함수들 또한 설정해주었는데,
 
 <br>
 <br>
-해당 셀 구동 시, '[ WARN:6@537.712] global /io/opencv/modules/imgcodecs/src/loadsave.cpp (239) findDecoder imread_('./printed/03384889.png'): can't open/read file: check file path/integrity' 와 같은 warning meassage가 뜨는데,
+해당 셀 구동 시, 
+<br>
+_'[ WARN:6@537.712] global /io/opencv/modules/imgcodecs/src/loadsave.cpp (239) findDecoder imread_('./printed/03384889.png'): can't open/read file: check file path/integrity'_
+<br>
+와 같은 warning meassage가 뜨는데,
 <br>
 이는 JSON 파일에서 문장 데이터가 아닌 다른 이미지 데이터들에 대한 정보가 제거되지 않았기 때문에 뜨는 메세지로, 무시하면 됩니다.
 <br>
@@ -328,7 +332,6 @@ model.save_weights('CRNN_weights_test.h5')
 <br>
 # (1) 한글 설정
 ```bash
-
 import matplotlib as mpl
 
 # 유니코드 깨짐현상 해결
@@ -340,6 +343,7 @@ plt.rcParams["font.family"] = 'NanumGothic'
 model 적용 결과가 한글이기 때문에 유니코드 깨짐 현상을 해결하였고,
 <br>
 학습 환경에 따라 폰트가 깨져서 나오기도 해 따로 폰트를 적용해주었다.
+```
 
 <br>
 # (2) 데이터 test
