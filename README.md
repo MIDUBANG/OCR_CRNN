@@ -13,6 +13,7 @@
 모델 및 코드 테스트는 *CRNN_train_test.ipynb* 코드를 실행하면 됩니다.
 
 <br>
+
 본 README는 *CRNN_train_test.ipynb* 기준으로 작성되었습니다.
 
 <br>
