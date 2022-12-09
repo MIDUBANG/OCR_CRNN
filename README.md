@@ -113,7 +113,7 @@ https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100
 
 # 5. Dataset Split
 
-```bash
+```python
 gt_util_train, gt_util_val = gt_util.split(0.8)
 ```
 Train : Validation = 8 : 2 의 비율로 나눠줍니다.
@@ -128,7 +128,7 @@ Train : Validation = 8 : 2 의 비율로 나눠줍니다.
 <br>
 
 ## (1) Model의 input parameter 정의
-```bash
+```python
 input_width = 256
 input_height = 32
 batch_size = 128
@@ -145,7 +145,7 @@ batch size는 본인의 학습 환경이나 모델 성능에 따라 변경해주
 <br>
 
 ## (2) 동결 Layer층 설정
-```bash
+```python
 freeze = ['conv1_1',
           'conv2_1',
           'conv3_1', 'conv3_2', 
@@ -162,7 +162,7 @@ fine tuning을 위해 동결할 Layer층을 설정해줍니다.
 <br>
 
 ## (3) 모델 정의 및 학습 모델의 version명 정의
-```bash
+```python
 model, model_pred = CRNN(input_shape, len(korean_dict))
 experiment = 'crnn_korean_test'
 ```
@@ -171,7 +171,7 @@ experiment = 'crnn_korean_test'
 <br>
 
 ## (4) InputGenerator 생성
-```bash
+```python
 max_string_len = model_pred.output_shape[1]
 
 gen_train = InputGenerator(gt_util_train, batch_size, korean_dict, input_shape[:2], 
@@ -183,7 +183,7 @@ gen_val = InputGenerator(gt_util_val, batch_size, korean_dict, input_shape[:2],
 <br>
 
 ## (5) 가중치 loading
-```bash
+```python
 model.load_weights('./CRNN_weights_2_v2.h5')
 ```
 이전에 진행했던 학습의 가중치를 load해 transfer learning을 진행합니다.
@@ -195,7 +195,7 @@ model.load_weights('./CRNN_weights_2_v2.h5')
 <br>
 
 ## (6) 모델 학습 과정 저장
-```bash
+```python
 checkdir = './checkpoints/' + time.strftime('%Y%m%d%H%M') + '_' + experiment
 if not os.path.exists(checkdir):
     os.makedirs(checkdir)
@@ -214,7 +214,7 @@ with open(checkdir+'/source.py','wb') as f:
 <br>
 
 ## (7) Optimizer 설정
-```bash
+```python
 optimizer = SGD(learning_rate=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
 ```
 Optimizer를 설정합니다.
@@ -223,7 +223,6 @@ Optimizer를 설정합니다.
 <br>
 만일 다른 모델을 사용할 경우, 따로 코드를 구현하거나 라이브러리를 로드해야 합니다.
 
-<br>
 <br>
 `learning rate`는 0.001부터 0.0001까지 값을 변경해가면서 학습을 진행했습니다.
 <br>
@@ -234,7 +233,7 @@ Optimizer를 설정합니다.
 <br>
 
 ## (8) (2)에서 설정한 Layer층의 가중치 동결
-```bash
+```python
 for layer in model.layers:
     layer.trainable = not layer.name in freeze
 ```
@@ -242,7 +241,7 @@ for layer in model.layers:
 <br>
 
 ## (9) 모델 Compile
-```bash
+```python
 model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizer)
 ```
 loss 모델로는 ctc loss를 사용하였으나, 이 또한 변경 가능합니다.
@@ -250,7 +249,7 @@ loss 모델로는 ctc loss를 사용하였으나, 이 또한 변경 가능합니
 <br>
 
 ## (10) 모델 학습
-```bash
+```python
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 
 hist = model.fit(gen_train.generate(), 
@@ -292,8 +291,10 @@ JSON 파일에 대한 작업을 진행했으나 완벽하게 정리되지 않아
 
 # 7. 학습 결과 확인
 <br>
+
 ## Loss graph 확인
-```bash
+
+```python
 loss = hist.history['loss']
 val_loss = hist.history['val_loss']
 
@@ -306,6 +307,7 @@ plt.legend()
 
 plt.show()
 ```
+
 해당 코드를 통해 epoch에 따른 loss값의 추이를 확인할 수 있다.
 
 
@@ -314,14 +316,14 @@ plt.show()
 # 8. 학습 모델 저장
 <br>
 ## (1) Model 저장
-```bash
+```python
 model.save('CRNN_model_test.h5')
 ```
 학습한 model 자체를 저장합니다. 파라미터에는 모델이 저장될 경로와 파일명을 설정해주면 됩니다.
 
 <br>
 ## (2) Weight 저장
-```bash
+```python
 model.save_weights('CRNN_weights_test.h5')
 ```
 학습한 model의 weight(가중치)를 저장합니다. 이 또한 파라미터에는 가중치가 저장될 경로와 파일명을 설정해주면 됩니다.
@@ -348,7 +350,7 @@ model 적용 결과가 한글이기 때문에 유니코드 깨짐 현상을 해�
 
 <br>
 # (2) 데이터 test
-```bash
+```python
 g = gen_val.generate()
 d = next(g)
 
@@ -385,15 +387,33 @@ for i in range(32):
 
 <br>
 # 10. 최종 디렉토리 구조
-학습 후에는 디렉토리가 다음과 같이 변경됩니다.
+학습 후에는 디렉토리가 다음과 같이 형식으로 변경됩니다.
 
 ```bash
 OCR_CRNN/
-├── checkpoints/
-│     ├── 03343000.png
-│     ├── 03343001.png
+├── <span style="color:green"> checkpoints/ </span>
+│     ├── <span style="color:yellowgreen"> 202211302056_crnn_korean_v1 </span>
+│     │     ├── history.csv
+│     │     ├── log.csv
+│     │     ├── weights.001.h5
+│     │     ├── weights.002.h5
+│     │     ├── ...
+│     │     └── weights.227.h5
+│     ├── 202212011003_crnn_korean_v2
+│     │     ├── history.csv
+│     │     ├── log.csv
+│     │     ├── weights.001.h5
+│     │     ├── weights.002.h5
+│     │     ├── ...
+│     │     └── weights.037.h5
 │     │   ...   
-│     └── 03385349.png
+│     └── 202212061250_crnn_korean_2_v1
+│           ├── history.csv
+│           ├── log.csv
+│           ├── weights.001.h5
+│           ├── weights.002.h5
+│           ├── ...
+│           └── weights.524.h5
 │
 ├── printed/
 │     ├── 03343000.png
@@ -411,8 +431,10 @@ OCR_CRNN/
 ├── CRNN_training.py
 ├── CRNN_model_2_v1.h5
 ├── CRNN_model_2_v2.h5
+├── CRNN_model_test.h5
 ├── CRNN_weights_2_v1.h5
 ├── CRNN_weights_2_v2.h5
+├── CRNN_weights_test.h5
 ├── crnn_data.py
 ├── crnn_model.py
 ├── crnn_utils.py
