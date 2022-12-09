@@ -340,10 +340,11 @@ mpl.rcParams['axes.unicode_minus'] = False
 # 나눔고딕 폰트 적용
 plt.rcParams["font.family"] = 'NanumGothic'
 ```
+
 model 적용 결과가 한글이기 때문에 유니코드 깨짐 현상을 해결하였고,
 <br>
 학습 환경에 따라 폰트가 깨져서 나오기도 해 따로 폰트를 적용해주었다.
-```
+
 
 <br>
 # (2) 데이터 test
