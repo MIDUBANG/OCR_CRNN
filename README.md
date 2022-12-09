@@ -1,19 +1,19 @@
 # OCR_CRNN
-CRNN 기반의 OCR 한글 모델 Training 
+> CRNN 기반의 OCR 한글 모델 Training 
 
-- CRNN_training.py: ~ 모델 학습 및 모델(가중치) 저장
-- CRNN_train_test.ipynb: ~ 모델 학습 및 모델(가중치) 저장, loss 추이 그래프, 모델 test
+- __CRNN_training.py__: ~ 모델 학습 및 모델(가중치) 저장
+- __CRNN_train_test.ipynb__: ~ 모델 학습 및 모델(가중치) 저장, loss 추이 그래프, 모델 test
 
-CRNN_train_test.ipynb를 통해 코드를 구성하였고,
+*CRNN_train_test.ipynb* 를 통해 코드를 구성하였고,
 <br>
-최종 모델 학습은 CRNN_train_test.ipynb를 바탕으로 한 CRNN_training.py를 터미널에서 실행해 백그라운드에서도 학습이 진행될 수 있게 하였습니다.
+최종 모델 학습은 *CRNN_train_test.ipynb* 를 바탕으로 한 *CRNN_training.py* 를 터미널에서 실행해 백그라운드에서도 학습이 진행될 수 있게 하였습니다.
 
-실제 학습은 CRNN_training.py 코드를 실행하면 되고,
+실제 학습은 *CRNN_training.py* 코드를 실행하면 되고,
 <br>
-모델 및 코드 테스트는 CRNN_train_test.ipynb 코드를 실행하면 됩니다.
+모델 및 코드 테스트는 *CRNN_train_test.ipynb* 코드를 실행하면 됩니다.
 
 <br>
-본 README는 CRNN_train_test.ipynb 기준으로 작성되었습니다.
+본 README는 *CRNN_train_test.ipynb* 기준으로 작성되었습니다.
 
 <br>
 <br>
@@ -59,7 +59,7 @@ OCR_CRNN/
 $ pip install -r requirements.txt
 ```
 위 커맨드를 실행해 모델 학습에 필요한 패키지를 설치합니다.
-CRNN_train_test.ipynb에 해당 코드가 포함되어 있지 않기 때문에 따로 실행해주어야 합니다.
+*CRNN_train_test.ipynb*에 해당 코드가 포함되어 있지 않기 때문에 따로 실행해주어야 합니다.
 
 <br>
 
@@ -70,14 +70,14 @@ https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100
 
 학습 데이터는 AI Hub의 '한국어 글자체 이미지' 데이터셋을 이용했습니다.
 <br>
-해당 데이터셋은 "손글씨", "인쇄체", "실사 데이터"로 구성되어 있고, 이 중 "인쇄체" 데이터는 '글자', '단어', '문장' 데이터로 구분되어 있습니다.
+해당 데이터셋은 **손글씨**, **인쇄체**, **실사 데이터** 로 구성되어 있고, 이 중 **인쇄체** 데이터는 ***글자***, ***단어***, ***문장***  데이터로 구분되어 있습니다.
 
 프로젝트에서 OCR 모델에 input으로 들어갈 데이터가 계약서이기 때문에,
 <br>
-현재까지 학습에선 '인쇄체' 데이터 중 '문장' 데이터 40,304개를 사용해 학습을 진행했습니다.
+현재까지 학습에선 **인쇄체** 데이터 중 ***문장***  데이터 40,304개를 사용해 학습을 진행했습니다.
 <br>
 <br>
-추후 학습은 '인쇄체_문장' 데이터에 대한 Data Augmentation이나 '손글씨' 데이터, 그리고 custom data를 바탕으로 fine tuning 및 transfer learning을 진행해 모델의 loss를 더 줄일 생각입니다.
+추후 학습은 **인쇄체_문장** 데이터에 대한 ***Data Augmentation*** 이나 ***손글씨***  데이터, 그리고 ***custom data*** 를 바탕으로 fine tuning 및 transfer learning을 진행해 모델의 loss를 더 줄일 생각입니다.
 
  
 <br>
@@ -118,7 +118,7 @@ gt_util_train, gt_util_val = gt_util.split(0.8)
 ```
 Train : Validation = 8 : 2 의 비율로 나눠줍니다.
 <br>
-비율을 변경하고 싶으면 gt_util.split() 함수 안의 파라미터를 원하는 train set 비율로 설정해주면 됩니다.
+비율을 변경하고 싶으면 `gt_util.split()` 함수 안의 파라미터를 원하는 train set 비율로 설정해주면 됩니다.
 
 <br>
 <br>
@@ -207,9 +207,9 @@ with open(checkdir+'/source.py','wb') as f:
 위에서 설정한 모델 version명을 토대로 directory를 생성해 학습 과정을 저장합니다.
 <br>
 <br>
-만약 CRNN_train_test.ipynb 가 아닌 CRNN_training.py 로 학습을 진행한다면,
+만약 *CRNN_train_test.ipynb* 가 아닌 *CRNN_training.py* 로 학습을 진행한다면,
 <br>
-하단의 코드 블럭을 생략해줘야 합니다.
+하단의 코드 블럭은 삭제해야 합니다.
 
 <br>
 
@@ -222,8 +222,8 @@ Optimizer를 설정합니다.
 본 코드에선 optimizer로 `SGD`를 사용했으나, 필요에 따라 `Adam`과 같은 다른 모델도 사용할 수 있습니다.
 <br>
 만일 다른 모델을 사용할 경우, 따로 코드를 구현하거나 라이브러리를 로드해야 합니다.
-
 <br>
+
 `learning rate`는 0.001부터 0.0001까지 값을 변경해가면서 학습을 진행했습니다.
 <br>
 본인의 상황에 맞게 값을 변경하면서 사용하면 됩니다.
@@ -244,7 +244,7 @@ for layer in model.layers:
 ```python
 model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizer)
 ```
-loss 모델로는 ctc loss를 사용하였으나, 이 또한 변경 가능합니다.
+loss 모델로는 `ctc loss`를 사용하였으나, 이 또한 변경 가능합니다.
 
 <br>
 
@@ -276,10 +276,12 @@ callback 함수들 또한 설정해주었는데,
 `EarlyStopping` 함수를 통해 20 epochs 동안 validation loss가 감소하지 않는다면 더이상 학습을 진행할 필요가 없다고 판단해 학습을 중단하도록 했습니다.
 
 <br>
-<br>
 해당 셀 구동 시, 
 <br>
-_'[ WARN:6@537.712] global /io/opencv/modules/imgcodecs/src/loadsave.cpp (239) findDecoder imread_('./printed/03384889.png'): can't open/read file: check file path/integrity'_
+<br>
+
+***'[ WARN:6@537.712] global /io/opencv/modules/imgcodecs/src/loadsave.cpp (239) findDecoder imread_('./printed/03384889.png'): can't open/read file: check file path/integrity'***
+
 <br>
 와 같은 warning meassage가 뜨는데,
 <br>
@@ -332,8 +334,9 @@ model.save_weights('CRNN_weights_test.h5')
 
 # 9. 학습 모델 Test
 <br>
-# (1) 한글 설정
-```bash
+
+## (1) 한글 설정
+```python
 import matplotlib as mpl
 
 # 유니코드 깨짐현상 해결
@@ -347,9 +350,9 @@ model 적용 결과가 한글이기 때문에 유니코드 깨짐 현상을 해�
 <br>
 학습 환경에 따라 폰트가 깨져서 나오기도 해 따로 폰트를 적용해주었다.
 
-
 <br>
-# (2) 데이터 test
+
+## (2) 데이터 test
 ```python
 g = gen_val.generate()
 d = next(g)
@@ -386,6 +389,7 @@ for i in range(32):
 추후 validation set에 없는 custom data 또한 적용해 결과를 확인할 수 있도록 코드를 작성할 계획입니다.
 
 <br>
+
 # 10. 최종 디렉토리 구조
 학습 후에는 디렉토리가 다음과 같이 형식으로 변경됩니다.
 
@@ -406,7 +410,7 @@ OCR_CRNN/
 │     │     ├── weights.002.h5
 │     │     ├── ...
 │     │     └── weights.037.h5
-│     │   ...   
+│     ├── ...
 │     └── 202212061250_crnn_korean_2_v1
 │           ├── history.csv
 │           ├── log.csv
