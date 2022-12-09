@@ -51,6 +51,8 @@ OCR_CRNN/
 └── requirements.txt
 ```
 
+<br>
+
 # 1. 패키지 설치하기
 
 ```bash
@@ -109,124 +111,316 @@ https://aihub.or.kr/aihubdata/data/view.do?currMenu=115&topMenu=100
 <br>
 <br>
 
+# 5. Dataset Split
 
-
-<br>
-
-# 5. 사용자 모델 학습(training)
-여기서부턴 gpu 환경에서만 가능하다.
-
-### 커맨드
 ```bash
-$ cd deep-text-recognition-benchmark
-$ CUDA_VISIBLE_DEVICES=0 python3 train.py 
-  --train_data ../data/data_lmdb_release/training 
-  --valid_data ../data/data_lmdb_release/validation 
-  --select_data basic-skew 
-  --batch_ratio 0.5-0.5 
-  --Transformation TPS 
-  --FeatureExtraction VGG 
-  --SequenceModeling BiLSTM 
-  --Prediction CTC 
-  --data_filtering_off  
-  --valInterval 100 
-  --batch_size 128 
-  --batch_max_length 50 
-  --workers 6 
-  --distributed 
-  --imgW 400;
+gt_util_train, gt_util_val = gt_util.split(0.8)
 ```
+Train : Validation = 8 : 2 의 비율로 나눠줍니다.
+<br>
+비율을 변경하고 싶으면 gt_util.split() 함수 안의 파라미터를 원하는 train set 비율로 설정해주면 됩니다.
+
+<br>
 <br>
 
-### 학습 옵션
-train.py의 옵션을 커스텀해 학습 가능하다.
-- `--train_data` : path to training dataset
-- `--valid_data` : path to validation dataset
-- `--select_data`: directories to use as training dataset(default = 'basic-skew')
-- `--batch_ratio` 
-- `--Transformation` : choose one - None|TPS
-- `--FeatureExtraction`: choose one - VGG|RCNN|ResNet 
-- `--SequenceModeling`: choose one - None|BiLSTM
-- `--Prediction` : choose one - CTC|Attn
-- `--data_filtering_off` : skip data filtering when creating LmdbDataset
-- `--valInterval` : Interval between each validation
-- `--workers` :  number of data loading workers
-- `--distributed`
-- `--imgW` : the width of the input image
-- `--imgH` : the height of the input image
+# 6. OCR 모델 학습
 
 <br>
 
-### 학습 결과
-- ocr_dtrb/deep-text-recognition-benchmark/saved_models 디렉토리에 학습시킨 모델별 `log_train.txt`, `best_accuracy.pth`, `best_norem_ED.pth` 파일이 저장된다. 
-- log_train.txt에서는 iteration마다 best_accuracy와 loss 값이 어떻게 변하는지 확인 가능하다.
-![](https://velog.velcdn.com/images/goinggoing/post/3d5391c9-7d6f-48fd-b4e6-cda1d13ddf61/image.png)
-- best_accuracy.pth 파일을 이용해 evaluation과 demo가 가능하다. 
+## (1) Model의 input parameter 정의
+```bash
+input_width = 256
+input_height = 32
+batch_size = 128
 
-<br>
-
-# 5. 사용자 모델 테스트(evaluation)
-
-
-- 본 학습에서는 training data : validation data = 2:1 비율로 설정했기 때문에 test data 생성과 테스트 과정을 생략했다. 
-- test 과정을 진행하고 싶다면 1~3단계에서 테스트 데이터도 생성/가공하면 된다.
-  
-### 커맨드
-```shell script
-$ CUDA_VISIBLE_DEVICES=0 python3 test.py 
-  --eval_data ../data/data_lmdb_release/evaluation 
-  --benchmark_all_eval 
-  --Transformation TPS 
-  --FeatureExtraction VGG 
-  --SequenceModeling None 
-  --Prediction CTC 
-  --saved_model saved_models/Test-TPS-VGG-None-CTC-Seed/best_accuracy.pth 
-  --data_fil1tering_off 
-  --workers 2 
-  --batch_size 128 
-  --imgW 400;
+input_shape = (input_width, input_height, 1)
 ```
-- 위 커맨드는 테스트 문장데이터로 lmdb 데이터셋을 생성하여 data_lmdb_release/evaluation 경로로 저장했다고 가정했다. 
-- 가장 정확도가 높았던 학습 모델인 Test-TPS-VGG-None-CTC-Seed를 테스트에 사용했다. 다운로드 받아 사용해볼 수 있다. (용량이 커 구글 드라이브로 첨부) [Test-TPS-VGG-None-CTC-Seed](https://drive.google.com/file/d/16JvCdkkEKum7CaFH4TkAVu1YWMC3NQ9_/view?usp=sharing)
-- 직접 학습시켜 새롭게 저장된 모델도 사용할 수 있다.
+
+input 이미지의 `width`와 `height`, 그리고 `batch size`를 설정합니다.
+<br>
+본 학습에서의 input은 문장 데이터였기 때문에 width를 height보다 크게 설정해주었습니다.
+<br>
+batch size는 본인의 학습 환경이나 모델 성능에 따라 변경해주면 됩니다
 
 <br>
 
-### 테스트 옵션
-학습 시에 사용한 옵션들을 거의 동일하게 사용할 수 있다. 
-- `--eval_data` : path to evaluation dataset
-- `--benchmark_all_eval` : evaluate 3 benchmark evaluation datasets
-- `--saved_model` : path to saved_model to evaluation
-
-<br>
-
-# 6. 학습 모델 데모
-
-- `--Transformation`, `--FeatureExtraction`, `--SequenceModeling`, `--Prediction` 옵션을 이용해 각 스테이지에서 사용할 모듈을 결정한다. 
-- 학습 시에 같은 모듈을 사용했더라도 설정한 옵션에 따라 accuracy와 loss가 다를 수 있다. 학습한 모델 중 데모를 시도할 모델은 `--saved_model` 옵션으로 지정할 수 있다.
-- `--image_folder` 옵션으로 데모 쓰일 디렉토리 경로를 지정한다.
-
-<br>
-
-### 커맨드
-```shell script
-$ CUDA_VISIBLE_DEVICES=0 python3 demo.py 
-  --Transformation TPS   
-  --FeatureExtraction VGG   
-  --SequenceModeling None   
-  --Prediction CTC  
-  --image_folder ../data/demo_image   
-  --saved_model saved_models/Test-TPS-VGG-None-CTC-Seed/best_accuracy.pth;
+## (2) 동결 Layer층 설정
+```bash
+freeze = ['conv1_1',
+          'conv2_1',
+          'conv3_1', 'conv3_2', 
+          #'conv4_1',
+          #'conv5_1',
+          #'conv6_1',
+          #'lstm1',
+          #'lstm2'
+         ]
 ```
-- saved_models 디렉토리에 학습시킨 모델 중 가장 정확도 높았던 모델을  다운로드 받아 사용해볼 수 있다. (용량이 커 구글 드라이브로 첨부) [Test-TPS-VGG-None-CTC-Seed](https://drive.google.com/file/d/16JvCdkkEKum7CaFH4TkAVu1YWMC3NQ9_/view?usp=sharing)
-- 예시는 saved_models/Test-TPS-VGG-None-CTC-Seed 디렉토리를 만들고 위의 모델을 다운 받아 이용한 데모이다. saved_models 디렉토리에 저장되는 학습 모델 경로로 지정하면 직접 학습시킨 다른 모델로도 가능하다.
+fine tuning을 위해 동결할 Layer층을 설정해줍니다.
+이 또한 모델 성능에 맞게 조절해주면 됩니다.
 
-- 데모를 위해 나눔고딕, 맑은 고딕, 굴림 폰트가 사용된 문장 이미지 데이터를 data/demo_image 디렉토리에 첨부해두었다. 다른 문장 이미지로도 가능하다. 
+<br>
 
+## (3) 모델 정의 및 학습 모델의 version명 정의
+```bash
+model, model_pred = CRNN(input_shape, len(korean_dict))
+experiment = 'crnn_korean_test'
+```
+실제 학습에선 version명은 'crnn_korean_v1', 'crnn_korean_v2' 등으로 바꿔가며 설정해주었습니다.
 
+<br>
+
+## (4) InputGenerator 생성
+```bash
+max_string_len = model_pred.output_shape[1]
+
+gen_train = InputGenerator(gt_util_train, batch_size, korean_dict, input_shape[:2], 
+                           grayscale=True, max_string_len=max_string_len, concatenate=False)
+gen_val = InputGenerator(gt_util_val, batch_size, korean_dict, input_shape[:2], 
+                         grayscale=True, max_string_len=max_string_len, concatenate=False)
+```
+
+<br>
+
+## (5) 가중치 loading
+```bash
+model.load_weights('./CRNN_weights_2_v2.h5')
+```
+이전에 진행했던 학습의 가중치를 load해 transfer learning을 진행합니다.
+<br>
+학습 중에 저장한 가중치를 불러와도 되고, 따로 저장한 가중치를 불러와도 됩니다.
+<br>
+본 코드에선 따로 저장한 가중치를 load해왔습니다.
+
+<br>
+
+## (6) 모델 학습 과정 저장
+```bash
+checkdir = './checkpoints/' + time.strftime('%Y%m%d%H%M') + '_' + experiment
+if not os.path.exists(checkdir):
+    os.makedirs(checkdir)
+
+with open(checkdir+'/source.py','wb') as f:
+    source = ''.join(['# In[%i]\n%s\n\n' % (i, In[i]) for i in range(len(In))])
+    f.write(source.encode())
+```
+위에서 설정한 모델 version명을 토대로 directory를 생성해 학습 과정을 저장합니다.
+<br>
+<br>
+만약 CRNN_train_test.ipynb 가 아닌 CRNN_training.py 로 학습을 진행한다면,
+<br>
+하단의 코드 블럭을 생략해줘야 합니다.
+
+<br>
+
+## (7) Optimizer 설정
+```bash
+optimizer = SGD(learning_rate=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
+```
+Optimizer를 설정합니다.
+<br>
+본 코드에선 optimizer로 `SGD`를 사용했으나, 필요에 따라 `Adam`과 같은 다른 모델도 사용할 수 있습니다.
+<br>
+만일 다른 모델을 사용할 경우, 따로 코드를 구현하거나 라이브러리를 로드해야 합니다.
+
+<br>
+<br>
+`learning rate`는 0.001부터 0.0001까지 값을 변경해가면서 학습을 진행했습니다.
+<br>
+본인의 상황에 맞게 값을 변경하면서 사용하면 됩니다.
+<br>
+본 학습에선 따로 값을 변경하지 않았으나, 필요한 경우 `decay`나 `momentum`의 값을 변경할 수도 있습니다.
+
+<br>
+
+## (8) (2)에서 설정한 Layer층의 가중치 동결
+```bash
+for layer in model.layers:
+    layer.trainable = not layer.name in freeze
+```
+
+<br>
+
+## (9) 모델 Compile
+```bash
+model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=optimizer)
+```
+loss 모델로는 ctc loss를 사용하였으나, 이 또한 변경 가능합니다.
+
+<br>
+
+## (10) 모델 학습
+```bash
+from keras.callbacks import ModelCheckpoint, EarlyStopping
+
+hist = model.fit(gen_train.generate(), 
+                steps_per_epoch=gt_util_train.num_objects // batch_size,
+                epochs=1000,
+                validation_data=gen_val.generate(), 
+                validation_steps=gt_util_val.num_objects // batch_size,
+                callbacks=[
+             ModelCheckpoint(checkdir+'/weights.{epoch:03d}.h5', verbose=1, save_weights_only=True),
+             #ModelSnapshot(checkdir, 100),
+             Logger(checkdir),
+            EarlyStopping(monitor='val_loss', mode='auto', restore_best_weights=True, verbose=1, patience=20)
+          ],
+          initial_epoch=0)
+```
+모델 학습을 진행합니다.
+<br>
+`epochs` 값을 변경할 수 있습니다.
+<br>
+callback 함수들 또한 설정해주었는데,
+<br>
+`ModelCheckpoint` 함수를 통해 하나의 epoch가 끝날 때마다 해당 epoch의 모델의 가중치를 저장해주었고,
+<br>
+`EarlyStopping` 함수를 통해 20 epochs 동안 validation loss가 감소하지 않는다면 더이상 학습을 진행할 필요가 없다고 판단해 학습을 중단하도록 했습니다.
+
+<br>
+<br>
+해당 셀 구동 시, '[ WARN:6@537.712] global /io/opencv/modules/imgcodecs/src/loadsave.cpp (239) findDecoder imread_('./printed/03384889.png'): can't open/read file: check file path/integrity' 와 같은 warning meassage가 뜨는데,
+<br>
+이는 JSON 파일에서 문장 데이터가 아닌 다른 이미지 데이터들에 대한 정보가 제거되지 않았기 때문에 뜨는 메세지로, 무시하면 됩니다.
+<br>
+JSON 파일에 대한 작업을 진행했으나 완벽하게 정리되지 않아 추후 이 부분을 보완할 생각입니다.
+
+<br>
+
+# 7. 학습 결과 확인
+<br>
+## Loss graph 확인
+```bash
+loss = hist.history['loss']
+val_loss = hist.history['val_loss']
+
+epochs = range(len(loss))
+plt.figure(figsize=(15,10))
+plt.plot(epochs, loss, 'r', label='Training loss')
+plt.plot(epochs, val_loss, 'b',label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+
+plt.show()
+```
+해당 코드를 통해 epoch에 따른 loss값의 추이를 확인할 수 있다.
 
 
 <br>
 
-# Acknowledgements
-[deep-text-recognition-benchmark](https://github.com/clovaai/deep-text-recognition-benchmark) , [TextRecognitionDataGenerator](https://github.com/Belval/TextRecognitionDataGenerator)
+# 8. 학습 모델 저장
+<br>
+## (1) Model 저장
+```bash
+model.save('CRNN_model_test.h5')
+```
+학습한 model 자체를 저장합니다. 파라미터에는 모델이 저장될 경로와 파일명을 설정해주면 됩니다.
+
+<br>
+## (2) Weight 저장
+```bash
+model.save_weights('CRNN_weights_test.h5')
+```
+학습한 model의 weight(가중치)를 저장합니다. 이 또한 파라미터에는 가중치가 저장될 경로와 파일명을 설정해주면 됩니다.
+
+<br>
+
+# 9. 학습 모델 Test
+<br>
+# (1) 한글 설정
+```bash
+
+import matplotlib as mpl
+
+# 유니코드 깨짐현상 해결
+mpl.rcParams['axes.unicode_minus'] = False
+
+# 나눔고딕 폰트 적용
+plt.rcParams["font.family"] = 'NanumGothic'
+```
+model 적용 결과가 한글이기 때문에 유니코드 깨짐 현상을 해결하였고,
+<br>
+학습 환경에 따라 폰트가 깨져서 나오기도 해 따로 폰트를 적용해주었다.
+
+<br>
+# (2) 데이터 test
+```bash
+g = gen_val.generate()
+d = next(g)
+
+res = model_pred.predict(d[0]['image_input'])
+
+mean_ed = 0
+mean_ed_norm = 0
+
+plot_name = 'crnn_korean'
+
+for i in range(32):
+    chars = [alphabet[c] for c in np.argmax(res[i], axis=1)]
+    gt_str = d[0]['source_str'][i]
+    res_str = decode(chars)
+    
+    ed = editdistance.eval(gt_str, res_str)
+    ed_norm = ed / len(gt_str)
+    mean_ed += ed
+    mean_ed_norm += ed_norm
+    
+    img = d[0]['image_input'][i][:,:,0].T
+    plt.figure(figsize=[10,1.03])
+    plt.imshow(img, cmap='gray', interpolation=None)
+    ax = plt.gca()
+    #plt.text(0, 45, '%s' % (''.join(chars)) )
+    plt.text(0, 60, 'GT: %-24s RT: %-24s %0.2f' % (gt_str, res_str, ed_norm))
+    
+    plt.show()
+```
+
+본 코드에선 학습에 사용하지 않은 validation set에서 이미지 데이터를 가져와 test를 진행했습니다.
+<br>
+추후 validation set에 없는 custom data 또한 적용해 결과를 확인할 수 있도록 코드를 작성할 계획입니다.
+
+<br>
+# 10. 최종 디렉토리 구조
+학습 후에는 디렉토리가 다음과 같이 변경됩니다.
+
+```bash
+OCR_CRNN/
+├── checkpoints/
+│     ├── 03343000.png
+│     ├── 03343001.png
+│     │   ...   
+│     └── 03385349.png
+│
+├── printed/
+│     ├── 03343000.png
+│     ├── 03343001.png
+│     │   ...   
+│     └── 03385349.png
+│
+├── utils/
+│     ├── bboxes.py
+│     ├── losses.py
+│     ├── model.py
+│     └── training.py           
+│    
+├── CRNN_train_test.ipynb
+├── CRNN_training.py
+├── CRNN_model_2_v1.h5
+├── CRNN_model_2_v2.h5
+├── CRNN_weights_2_v1.h5
+├── CRNN_weights_2_v2.h5
+├── crnn_data.py
+├── crnn_model.py
+├── crnn_utils.py
+├── ssd_data.py
+├── korean_printed_sentence.json
+├── NanumBarunGothic.ttf
+└── requirements.txt
+```
+
+<br>
+<br>
+
+<hr>
+
+# Reference
+https://github.com/mvoelk/ssd_detectors
